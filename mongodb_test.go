@@ -45,7 +45,7 @@ func Test_MongoDBInsert(t *testing.T) {
 	query := func(c *mgo.Collection) error {
 		return c.Insert(&acc)
 	}
-	QueryWitchCollection("accounts", query)
+	QueryWithCollection("accounts", query)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -66,6 +66,6 @@ func Test_MongoDBGetByID(t *testing.T) {
 		return c.FindId(objid).One(&acc)
 	}
 
-	QueryWitchCollection("accounts", query)
+	QueryWithCollection("accounts", query)
 	fmt.Println("account id", acc.ID.Hex())
 }

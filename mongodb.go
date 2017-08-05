@@ -43,8 +43,8 @@ func getMongoSession() *mgo.Session {
 	return mgoSession.Clone()
 }
 
-//QueryWitchCollection 获取collection对象
-func QueryWitchCollection(collection string, s func(*mgo.Collection) error) error {
+//QueryWithCollection 获取collection对象
+func QueryWithCollection(collection string, s func(*mgo.Collection) error) error {
 	session := getMongoSession()
 	defer session.Close()
 	c := session.DB(dbConfig.DBName).C(collection)
