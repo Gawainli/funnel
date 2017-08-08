@@ -1,4 +1,4 @@
-package funnel
+package db
 
 import "github.com/go-redis/redis"
 import "fmt"

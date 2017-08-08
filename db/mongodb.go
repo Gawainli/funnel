@@ -1,6 +1,8 @@
-package funnel
+package db
 
 import (
+	"fmt"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -49,4 +51,29 @@ func QueryWithCollection(collection string, s func(*mgo.Collection) error) error
 	defer session.Close()
 	c := session.DB(dbConfig.DBName).C(collection)
 	return s(c)
+}
+
+//GetNextSeq 获取自增id
+func GetNextSeq(num int) int {
+	doc := struct{ Seq int }{}
+	cid := "counterid"
+	query := func(c *mgo.Collection) error {
+		change := mgo.Change{
+			Update:    bson.M{"$inc": bson.M{"seq": num}},
+			Upsert:    true,
+			ReturnNew: true,
+		}
+		_, err := c.Find(bson.M{"_id": cid}).Apply(change, &doc)
+		if err != nil {
+			panic(fmt.Errorf("get counter failed:", err.Error()))
+		}
+		return err
+	}
+
+	err := QueryWithCollection("counter", query)
+	if err != nil {
+		fmt.Println(err.Error())
+		return -1
+	}
+	return doc.Seq
 }
