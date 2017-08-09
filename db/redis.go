@@ -131,3 +131,14 @@ func RPushMultiInt(key string, val []int) error {
 	}
 	return QueryWithRedis(query)
 }
+
+func GetIncrKey(key string, incr int) (int64, error) {
+	var val int64
+	var err error
+	query := func(c *redis.Client) error {
+		val, err = c.IncrBy(key, int64(incr)).Result()
+		return err
+	}
+	err = QueryWithRedis(query)
+	return val, err
+}

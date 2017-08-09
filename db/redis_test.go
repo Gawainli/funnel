@@ -64,3 +64,40 @@ func Test_RedisGet(t *testing.T) {
 	fmt.Println("t2:", t2)
 	fmt.Println("t2.name:", t2.Name)
 }
+
+func Test_SAdd(t *testing.T) {
+	Test_RedisConnect(t)
+	strs := []interface{}{"123", "321", "123456"}
+	inf := []interface{}{}
+
+	for _, v := range strs {
+		inf = append(inf, v)
+	}
+
+	query := func(c *redis.Client) error {
+		err := c.SAdd("t4set", inf...).Err()
+		return err
+	}
+	err := QueryWithRedis(query)
+	if err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func Test_LPushMulti(t *testing.T) {
+	Test_RedisConnect(t)
+
+	ints := []int{1, 2, 3, 4, 5}
+	inf := []interface{}{}
+	for _, v := range ints {
+		inf = append(inf, v)
+	}
+	query := func(c *redis.Client) error {
+		err := c.RPush("list1", inf...).Err()
+		return err
+	}
+	err := QueryWithRedis(query)
+	if err != nil {
+		t.Error(err.Error())
+	}
+}
