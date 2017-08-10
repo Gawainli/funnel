@@ -106,10 +106,32 @@ func ExistsKey(key string) int {
 	return re
 }
 
+func DelKey(key string) {
+	delQuery := func(r *redis.Client) error {
+		err := r.Del(key).Err()
+		return err
+	}
+	QueryWithRedis(delQuery)
+}
+
 func SAddMultiString(key string, strs []string) error {
 	inf := []interface{}{}
 
 	for _, v := range strs {
+		inf = append(inf, v)
+	}
+
+	query := func(c *redis.Client) error {
+		err := c.SAdd(key, inf...).Err()
+		return err
+	}
+	return QueryWithRedis(query)
+}
+
+func SAddMultiInt(key string, vals []int) error {
+	inf := []interface{}{}
+
+	for _, v := range vals {
 		inf = append(inf, v)
 	}
 
@@ -132,6 +154,50 @@ func RPushMultiInt(key string, val []int) error {
 	return QueryWithRedis(query)
 }
 
+func RPushMultiBytes(key string, val [][]byte) error {
+	inf := []interface{}{}
+	for _, v := range val {
+		inf = append(inf, v)
+	}
+	query := func(c *redis.Client) error {
+		err := c.RPush(key, inf...).Err()
+		return err
+	}
+	return QueryWithRedis(query)
+}
+
+func LRangeString(key string, s int, e int) ([]string, error) {
+	var strs []string
+	var err error
+	query := func(c *redis.Client) error {
+		strs, err = c.LRange(key, int64(s), int64(e)).Result()
+		return err
+	}
+	QueryWithRedis(query)
+	return strs, err
+}
+
+func LRangeInt(key string, s int, e int) ([]int, error) {
+	var strs []string
+	var val []int
+	var err error
+	query := func(c *redis.Client) error {
+		strs, err = c.LRange(key, int64(s), int64(e)).Result()
+		return err
+	}
+	QueryWithRedis(query)
+
+	val = make([]int, len(strs))
+	for i, v := range strs {
+		k, err := strconv.Atoi(v)
+		if err != nil {
+			return nil, err
+		}
+		val[i] = k
+	}
+	return val, err
+}
+
 func GetIncrKey(key string, incr int) (int64, error) {
 	var val int64
 	var err error
@@ -141,4 +207,31 @@ func GetIncrKey(key string, incr int) (int64, error) {
 	}
 	err = QueryWithRedis(query)
 	return val, err
+}
+
+func SMembers(key string) ([]string, error) {
+	val := []string{}
+	var err error
+	redisQuery := func(r *redis.Client) error {
+		val, err = r.SMembers(key).Result()
+		return err
+	}
+	err = QueryWithRedis(redisQuery)
+	return val, err
+}
+
+func LSetString(key string, idx int64, val string) error {
+	redisQuery := func(r *redis.Client) error {
+		err := r.LSet(key, idx, val).Err()
+		return err
+	}
+	return QueryWithRedis(redisQuery)
+}
+
+func LSetInt(key string, idx int64, val int) error {
+	redisQuery := func(r *redis.Client) error {
+		err := r.LSet(key, idx, val).Err()
+		return err
+	}
+	return QueryWithRedis(redisQuery)
 }
