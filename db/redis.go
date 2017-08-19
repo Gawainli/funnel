@@ -35,7 +35,7 @@ func QueryWithRedis(s func(*redis.Client) error) error {
 func KeyLock(key string) {
 	keylock := key + "@lock"
 	redisQuery := func(r *redis.Client) error {
-		err := r.SetNX(keylock, strconv.FormatInt(time.Now().Unix(), 10), 3*time.Second).Err()
+		err := r.SetNX(keylock, strconv.FormatInt(time.Now().Unix(), 10), 5*time.Second).Err()
 		return err
 	}
 	err := QueryWithRedis(redisQuery)
@@ -53,6 +53,14 @@ func KeyUnLock(key string) {
 		return err
 	}
 	QueryWithRedis(redisQuery)
+}
+
+func SetKeyEx(key string, val interface{}, ex time.Duration) error {
+	setQuery := func(r *redis.Client) error {
+		err := r.SetNX(key, val, ex).Err()
+		return err
+	}
+	return QueryWithRedis(setQuery)
 }
 
 func SetKey(key string, buf []byte, ex time.Duration) error {
@@ -106,9 +114,9 @@ func ExistsKey(key string) int {
 	return re
 }
 
-func DelKey(key string) {
+func DelKey(key ...string) {
 	delQuery := func(r *redis.Client) error {
-		err := r.Del(key).Err()
+		err := r.Del(key...).Err()
 		return err
 	}
 	QueryWithRedis(delQuery)
@@ -228,10 +236,40 @@ func LSetString(key string, idx int64, val string) error {
 	return QueryWithRedis(redisQuery)
 }
 
+func LIndexString(key string, idx int64) (string, error) {
+	str := ""
+	redisQuery := func(r *redis.Client) error {
+		var err error
+		str, err = r.LIndex(key, idx).Result()
+		return err
+	}
+	err := QueryWithRedis(redisQuery)
+	return str, err
+}
+
 func LSetInt(key string, idx int64, val int) error {
 	redisQuery := func(r *redis.Client) error {
 		err := r.LSet(key, idx, val).Err()
 		return err
 	}
 	return QueryWithRedis(redisQuery)
+}
+
+func ExpireKey(key string, time time.Duration) error {
+	redisQuery := func(r *redis.Client) error {
+		err := r.Expire(key, time).Err()
+		return err
+	}
+	return QueryWithRedis(redisQuery)
+}
+
+func TTLKey(key string) (time.Duration, error) {
+	var t time.Duration
+	redisQuery := func(r *redis.Client) error {
+		var err error
+		t, err = r.TTL(key).Result()
+		return err
+	}
+	err := QueryWithRedis(redisQuery)
+	return t, err
 }
