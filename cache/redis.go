@@ -33,7 +33,7 @@ func ConnectRedis(addr string, pwd string) (r *RClient) {
 	return
 }
 
-//KeyLock ...
+//KeyLock SetNx实现的分布式锁
 func (r *RClient) KeyLock(key string) {
 	keylock := key + "@lock"
 	err := r.SetNX(keylock, strconv.FormatInt(time.Now().Unix(), 10), 5*time.Second).Err()
@@ -73,11 +73,13 @@ func (r *RClient) LRangeString(key string, s int, e int) ([]string, error) {
 	return strs, err
 }
 
+//GetIncrKey ...
 func (r *RClient) GetIncrKey(key string, incr int) (int64, error) {
 	val, err := r.IncrBy(key, int64(incr)).Result()
 	return val, err
 }
 
+//SAddMultiString ...
 func (r *RClient) SAddMultiString(key string, strs []string) error {
 	inf := []interface{}{}
 
@@ -88,6 +90,7 @@ func (r *RClient) SAddMultiString(key string, strs []string) error {
 	return r.SAdd(key, inf...).Err()
 }
 
+//SAddMultiInt ...
 func (r *RClient) SAddMultiInt(key string, vals []int) error {
 	inf := []interface{}{}
 
@@ -98,6 +101,7 @@ func (r *RClient) SAddMultiInt(key string, vals []int) error {
 	return r.SAdd(key, inf...).Err()
 }
 
+//RPushMultiInt ...
 func (r *RClient) RPushMultiInt(key string, val []int) error {
 	inf := []interface{}{}
 	for _, v := range val {
@@ -106,6 +110,7 @@ func (r *RClient) RPushMultiInt(key string, val []int) error {
 	return r.RPush(key, inf...).Err()
 }
 
+//RPushMultiBytes ...
 func (r *RClient) RPushMultiBytes(key string, val [][]byte) error {
 	inf := []interface{}{}
 	for _, v := range val {
