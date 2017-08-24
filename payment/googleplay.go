@@ -23,8 +23,8 @@ type cacheToken struct {
 
 var mCacheToken cacheToken
 
-//refreshAccessToken refresh access token
-func refreshAccessToken() {
+//RefreshAccessToken refresh access token
+func RefreshAccessToken() (string, error) {
 	req := httplib.Post("https://accounts.google.com/o/oauth2/token")
 	req.SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 	req.SetTimeout(100*time.Second, 30*time.Second)
@@ -39,34 +39,25 @@ func refreshAccessToken() {
 
 	if err != nil {
 		fmt.Println("refresh token error:", err)
+		return "", err
 	} else {
 		fmt.Println("refresh token result:", err)
 		var dat map[string]interface{}
 		if errRes := json.Unmarshal([]byte(result), &dat); errRes == nil {
-			mCacheToken.accesstoken = dat["access_token"].(string)
-			mCacheToken.expiresin = int64(dat["expires_in"].(float64))
-			mCacheToken.createtime = time.Now().UTC().Unix()
+			// mCacheToken.accesstoken = dat["access_token"].(string)
+			// mCacheToken.expiresin = int64(dat["expires_in"].(float64))
+			// mCacheToken.createtime = time.Now().UTC().Unix()
+			return dat["access_token"].(string), nil
+		} else {
+			return "", errRes
 		}
 	}
 }
 
 //VerifyGooglePay verifiy result for google iap
-func VerifyGooglePay(packageName string, productID string, purchaseToken string) (string, error) {
-	if mCacheToken.accesstoken != "" {
-		cTime := mCacheToken.createtime
-		expires := mCacheToken.expiresin
-		now := time.Now().UTC().Unix()
-		if now > cTime+expires-60 {
-			refreshAccessToken()
-		}
-	} else {
-		refreshAccessToken()
-	}
-	// fmt.Println("access token:", mCacheToken.accesstoken)
-	// fmt.Println("token create time:", mCacheToken.createtime)
-	// fmt.Println("token expires_in:", mCacheToken.expiresin)
+func VerifyGooglePay(packageName string, productID string, purchaseToken string, accessToken string) (string, error) {
 	url := "https://www.googleapis.com/androidpublisher/v2/applications/" + packageName + "/purchases/products/" + productID + "/tokens/" + purchaseToken +
-		"?access_token=" + mCacheToken.accesstoken
+		"?access_token=" + accessToken
 	fmt.Println("verify url:", url)
 	req := httplib.Get(url)
 	req.SetTimeout(10*time.Second, 10*time.Second)

@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/httplib"
 )
 
@@ -29,7 +28,7 @@ func SetNimReqHeader(req *httplib.BeegoHTTPRequest, appkey string, nonce string,
 		return errors.New("req is nil")
 	}
 	curTime := time.Now().UTC().Unix()
-	checkSum := getCheckSum(beego.AppConfig.String("appsecret"), nonce, strconv.FormatInt(curTime, 10))
+	checkSum := getCheckSum(appsecret, nonce, strconv.FormatInt(curTime, 10))
 	req.Header("AppKey", appkey)
 	req.Header("Nonce", nonce)
 	req.Header("CurTime", strconv.FormatInt(curTime, 10))
