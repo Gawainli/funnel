@@ -71,8 +71,8 @@ func BuildRemoveReq(req *httplib.BeegoHTTPRequest, tid string, owner string) err
 	return nil
 }
 
-//BuildChangeOwnerReq set param for changeOwner
-func BuildChangeOwnerReq(req *httplib.BeegoHTTPRequest, tid string, owner string, newowner string, leave int) error {
+//BuildChangeTeamOwnerReq set param for changeOwner
+func BuildChangeTeamOwnerReq(req *httplib.BeegoHTTPRequest, tid string, owner string, newowner string, leave int) error {
 	if req == nil {
 		return errors.New("req is nil")
 	}
