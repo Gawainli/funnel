@@ -10,9 +10,9 @@ import (
 )
 
 const (
-	clientid     = "593458347697-3k289d5gf9m8csoe4o0q8j76pa8bjj9m.apps.googleusercontent.com"
-	clientsecret = "eNj3oUFmw2Kscah9hiXFQeeM"
-	refreshtoken = "1/YLfsOR24VpPTGFvX1e37KTSn3QdQs577dUJvRvLK8h4"
+	clientid     = "399001718695-htp9eof8mfmtsidp20u0fsgflatd01jj.apps.googleusercontent.com"
+	clientsecret = "WBbF3MVDgaSKgzK3OP59dB3L"
+	refreshtoken = "1/LH1seSj9h6jUAZdVPDv-uh6DAYvxI_wsIqpHH2ZFcKA"
 )
 
 type cacheToken struct {
