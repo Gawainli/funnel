@@ -53,10 +53,33 @@ func QueryWithCollection(collection string, s func(*mgo.Collection) error) error
 	return s(c)
 }
 
-//GetNextSeq 获取自增id
-func GetNextSeq(num int) int {
+func SetNextSeqBaseNum(collection string, key string, base int) int {
 	doc := struct{ Seq int }{}
-	cid := "counterid"
+	query := func(c *mgo.Collection) error {
+		change := mgo.Change{
+			Update: bson.M{
+				"$setOnInsert": bson.M{"seq": base},
+			},
+			Upsert:    true,
+			ReturnNew: true,
+		}
+		_, err := c.Find(bson.M{"_id": key}).Apply(change, &doc)
+		if err != nil {
+			panic(fmt.Errorf("set counter failed:", err.Error()))
+		}
+		return err
+	}
+	err := QueryWithCollection(collection, query)
+	if err != nil {
+		return -1
+	}
+	return doc.Seq
+}
+
+//GetNextSeq 获取自增id
+func GetNextSeq(collection string, key string, num int) int {
+	doc := struct{ Seq int }{}
+	cid := key
 	query := func(c *mgo.Collection) error {
 		change := mgo.Change{
 			Update:    bson.M{"$inc": bson.M{"seq": num}},
@@ -70,7 +93,7 @@ func GetNextSeq(num int) int {
 		return err
 	}
 
-	err := QueryWithCollection("counter", query)
+	err := QueryWithCollection(collection, query)
 	if err != nil {
 		fmt.Println(err.Error())
 		return -1
