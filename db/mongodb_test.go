@@ -30,7 +30,7 @@ func (a *Account) GetObjectID() bson.ObjectId {
 }
 
 func connectMongo() error {
-	return ConnectMongoDB("mongodb://192.168.0.98:27017", "test")
+	return ConnectMongoDB("mongodb://192.168.1.111:27017", "test")
 }
 
 func Test_MongoDBInsert(t *testing.T) {
@@ -40,7 +40,7 @@ func Test_MongoDBInsert(t *testing.T) {
 	}
 	acc := Account{}
 	acc.GenObjectID()
-	acc.UID = GetNextSeq(utils.GenRandIntN(100))
+	acc.UID = GetNextSeq("testc", "countid", utils.GenRandIntN(100))
 	acc.LoginTime = time.Now()
 	acc.UserName = "ht5"
 	acc.Pwd = "1230000"
@@ -99,6 +99,15 @@ func Test_MongoDBIncrID(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	id := GetNextSeq(100)
+	id := GetNextSeq("testc", "countid", 100)
 	fmt.Println(id)
+}
+
+func Test_SetSeqBase(t *testing.T) {
+	err := connectMongo()
+	if err != nil {
+		t.Error(err.Error())
+	}
+	num := SetNextSeqBaseNum("testc", "countid", 1000)
+	fmt.Println(num)
 }
