@@ -36,10 +36,18 @@ func ConnectRedis(addr string, pwd string) (r *RClient) {
 //KeyLock SetNx实现的分布式锁
 func (r *RClient) KeyLock(key string) {
 	keylock := key + "@lock"
-	err := r.SetNX(keylock, strconv.FormatInt(time.Now().Unix(), 10), 5*time.Second).Err()
-	for err != nil {
-		time.Sleep(10 * time.Millisecond)
+	b, err := r.SetNX(keylock, strconv.FormatInt(time.Now().Unix(), 10), 5*time.Second).Result()
+	if err != nil {
+		fmt.Println("redis key lock failed!")
+		return
 	}
+
+	for b != true {
+		b, _ = r.SetNX(keylock, strconv.FormatInt(time.Now().Unix(), 10), 5*time.Second).Result()
+		time.Sleep(100 * time.Millisecond)
+		fmt.Println("key lock!! b:", b)
+	}
+
 }
 
 //KeyUnLock ...
