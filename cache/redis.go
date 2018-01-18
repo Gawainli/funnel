@@ -44,7 +44,7 @@ func (r *RClient) KeyLock(key string) {
 
 	for b != true {
 		b, _ = r.SetNX(keylock, strconv.FormatInt(time.Now().Unix(), 10), 5*time.Second).Result()
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(10 * time.Millisecond)
 		fmt.Println("key lock!! b:", b)
 	}
 
@@ -109,8 +109,28 @@ func (r *RClient) SAddMultiInt(key string, vals []int) error {
 	return r.SAdd(key, inf...).Err()
 }
 
+//SAddMultiInt64 ...
+func (r *RClient) SAddMultiInt64(key string, vals []int64) error {
+	inf := []interface{}{}
+
+	for _, v := range vals {
+		inf = append(inf, v)
+	}
+
+	return r.SAdd(key, inf...).Err()
+}
+
 //RPushMultiInt ...
 func (r *RClient) RPushMultiInt(key string, val []int) error {
+	inf := []interface{}{}
+	for _, v := range val {
+		inf = append(inf, v)
+	}
+	return r.RPush(key, inf...).Err()
+}
+
+//RPushMultiInt64 ...
+func (r *RClient) RPushMultiInt64(key string, val []int64) error {
 	inf := []interface{}{}
 	for _, v := range val {
 		inf = append(inf, v)
