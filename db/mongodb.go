@@ -1,7 +1,9 @@
 package db
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -36,6 +38,26 @@ func ConnectMongoDB(url string, dbName string) error {
 	return nil
 }
 
+//ConnectMongoDB 连接MongoDB
+func ConnectMongoDBWithPasswd(url string, dbName string, user string, passwd string) error {
+	if strings.HasPrefix(url, "mongodb://") {
+		url = url[10:]
+	}
+	url = user + ":" + passwd + "@" + url + "/" + dbName
+	fmt.Println("url: " + url)
+	var err error
+	mgoSession, err = mgo.DialWithTimeout(url, 60000000)
+	//mgoSession.Ping()
+	dbConfig = &MongodbConfig{}
+	dbConfig.URL = url
+	dbConfig.DBName = dbName
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 //GetMongoSession 获取session， 必须手动Close
 func getMongoSession() *mgo.Session {
 	if mgoSession == nil {
@@ -48,9 +70,13 @@ func getMongoSession() *mgo.Session {
 //QueryWithCollection 获取collection对象
 func QueryWithCollection(collection string, s func(*mgo.Collection) error) error {
 	session := getMongoSession()
-	defer session.Close()
-	c := session.DB(dbConfig.DBName).C(collection)
-	return s(c)
+	if session != nil {
+		defer session.Close()
+		c := session.DB(dbConfig.DBName).C(collection)
+		return s(c)
+	}
+
+	return errors.New("session is nil")
 }
 
 func SetNextSeqBaseNum(collection string, key string, base int) int {
