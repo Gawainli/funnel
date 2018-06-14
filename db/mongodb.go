@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -39,14 +40,14 @@ func ConnectMongoDB(url string, dbName string) error {
 }
 
 //ConnectMongoDB 连接MongoDB
-func ConnectMongoDBWithPasswd(url string, dbName string, user string, passwd string) error {
+func ConnectMongoDBWithPasswd(url string, dbName string, user string, passwd string, timeout time.Duration) error {
 	if strings.HasPrefix(url, "mongodb://") {
 		url = url[10:]
 	}
 	url = user + ":" + passwd + "@" + url + "/" + dbName
 	fmt.Println("url: " + url)
 	var err error
-	mgoSession, err = mgo.DialWithTimeout(url, 60000000)
+	mgoSession, err = mgo.DialWithTimeout(url, timeout)
 	//mgoSession.Ping()
 	dbConfig = &MongodbConfig{}
 	dbConfig.URL = url
